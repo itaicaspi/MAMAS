@@ -103,7 +103,8 @@ class LC3
 	unsigned char mem[MEM_SIZE];	// Memory
 	unsigned short pc;				// Program Counter
 
-	struct Signals tempSignals; // temp state
+	struct Signals tempSignals;     // temp state
+	void updateFlags(short val);    // updating NZP flags
 public:
 	LC3();
 	void DumpMem();

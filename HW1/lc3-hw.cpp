@@ -29,50 +29,83 @@ void LC3::Decode(unsigned short ins, struct Signals &signals)
 
 void LC3::Exec(struct Signals &signals)
 {
-	short val2;
-	if (signals.controls.ALUSrc == 0) {
+	short val2, result;
+
+	if (signals.ID_EX_latches.EX.ALUSrc == 0) {
 		val2 = signals.ID_EX_latches.data2;
 	} else {
 		val2 = signals.ID_EX_latches.Imm;
 	}
 
-	// TODO: for ALU operation - perform operation
-	if (signals.controls.ALUOp1 == 0 && signals.controls.ALUOp0 == 0) {
-		tempSignals.EX_MEM_latches.result = signals.ID_EX_latches.data1 + val2;
-	} else if (signals.controls.ALUOp1 == 1 && signals.controls.ALUOp0 == 0) {
-		tempSignals.EX_MEM_latches.result = signals.ID_EX_latches.data1 & val2;
-	} else if (signals.controls.ALUOp1 == 0 && signals.controls.ALUOp0 == 1) {
+	// Calculate jump address
+	tempSignals.EX_MEM_latches.NewPC = signals.ID_EX_latches.NewPC +
+									   signals.ID_EX_latches.Imm << 1;
+
+	// Perform ALU operations
+	if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
+		result = signals.ID_EX_latches.data1 + val2;
+		updateFlags(result);
+	} else if (signals.ID_EX_latches.EX.ALUOp1 == 1 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
+		result = signals.ID_EX_latches.data1 & val2;
+		updateFlags(result);
+	} else if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 1) {
 		// TODO: branch subtract
 	}
 
-	// update flags for ADD and AND
-	// TODO: for memory access - calculate effective address
-	// TODO: for branch - calculate target address and branch condition
-	if (signals.controls.RegDst == 0) {
+	// Update the flags
+	tempSignals.EX_MEM_latches.result = result;
+
+	// Pass the register latches to next level
+	if (signals.ID_EX_latches.EX.RegDst == 0) {
 		tempSignals.EX_MEM_latches.Rd_Rt = signals.ID_EX_latches.Rt;
 	} else {
 		tempSignals.EX_MEM_latches.Rd_Rt = signals.ID_EX_latches.Rd;
 	}
+
+	// Pass the signals to the next phase
+	tempSignals.EX_MEM_latches.MEM_WB = signals.ID_EX_latches.MEM_WB;
 }
 
 void LC3::WbMem(struct Signals &signals)
 {
-	// TODO: for STORE or LOAD - write or read from memory
-	// TODO: for branch - decide if to jump and update pc accordingly
-	// TODO: store the result from ALU or memory to the destination register
 
-	if (signals.controls.MemRead) {
-		if (signals.controls.MemToReg) {
-			= signals.EX_MEM_latches.result;
-		} else {
-			 = mem[signals.EX_MEM_latches.data];
-		}
+	short writeData, readData;
 
-	} else {
+	if (signals.EX_MEM_latches.MEM_WB.MemRead) {
+		// Read from memory
+		readData = mem[signals.EX_MEM_latches.data];
+	} else if (signals.EX_MEM_latches.MEM_WB.MemWrite) {
+		// Write to memory
 		mem[signals.EX_MEM_latches.result] = signals.EX_MEM_latches.data;
 	}
 
-	if (signals.controls.PCSrc) {
+	if (signals.EX_MEM_latches.MEM_WB.MemToReg) {
+		// Write data is from memory
+		writeData = signals.EX_MEM_latches.result;
+	} else {
+		// Write data is from ALU result
+		writeData = mem[signals.EX_MEM_latches.data];
+	}
+
+	// Writing to RF can be done in parallel to reading in DECODE
+	if (signals.EX_MEM_latches.MEM_WB.RegWrite) {
+		regs[signals.EX_MEM_latches.Rd_Rt] = writeData;
+	}
+
+	// Branch decision
+	if (signals.EX_MEM_latches.MEM_WB.Branch &&
+		(signals.EX_MEM_latches.Rd_Rt == P_FLAG + N_FLAG + Z_FLAG ||
+		signals.EX_MEM_latches.Rd_Rt == flags)) {
+		// branch
+		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 0;
+		// TODO: clean all the command that were already loaded to the pipe
+	} else {
+		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 1;
+	}
+
+
+	// Branch or regular execution
+	if (tempSignals.EX_MEM_latches.MEM_WB.PCSrc) {
 		pc += 2;
 	} else {
 		pc = signals.EX_MEM_latches.NewPC;
@@ -80,3 +113,14 @@ void LC3::WbMem(struct Signals &signals)
 
 
 }
+
+void LC3::updateFlags(short val)
+{
+	if (val > 0) flags = P_FLAG;
+	else if (val == 0) flags = Z_FLAG;
+	else flags = N_FLAG;
+}
+
+
+// TODO: need to create a temp copy of flags
+// TODO: deal with hazards
