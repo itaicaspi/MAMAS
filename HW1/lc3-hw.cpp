@@ -14,7 +14,6 @@ void LC3::Run(int steps)
 	   Decode(ins, signals);
 	   Exec(signals);
 	   WbMem(signals);
-	   flags = tempSignals.EX_MEM_latches.flags;
 	   signals = tempSignals;
    }
 }
@@ -80,17 +79,18 @@ void LC3::Exec(struct Signals &signals)
 	tempSignals.EX_MEM_latches.NewPC = signals.ID_EX_latches.NewPC +
 									   signals.ID_EX_latches.Imm << 1;
 
+	// store current flags in case they are not updated
+	tempSignals.EX_MEM_latches.flags = flags;
+
 	// Perform ALU operations
 	if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
 		// ADD
 		result = signals.ID_EX_latches.data1 + val2;
-		signals.EX_MEM_latches.flags = getFlags(result);
+		tempSignals.EX_MEM_latches.flags = getFlags(result);
 	} else if (signals.ID_EX_latches.EX.ALUOp1 == 1 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
 		// AND
 		result = signals.ID_EX_latches.data1 & val2;
-		signals.EX_MEM_latches.flags = getFlags(result);
-	} else if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 1) {
-		// TODO: branch subtract
+		tempSignals.EX_MEM_latches.flags = getFlags(result);
 	}
 
 	// Update the result
@@ -115,6 +115,8 @@ void LC3::WbMem(struct Signals &signals)
 	if (signals.EX_MEM_latches.MEM_WB.MemRead) {
 		// Read from memory
 		readData = mem[signals.EX_MEM_latches.data];
+		// update flags for LD
+		tempSignals.EX_MEM_latches.flags = getFlags(readData);
 	} else if (signals.EX_MEM_latches.MEM_WB.MemWrite) {
 		// Write to memory
 		mem[signals.EX_MEM_latches.result] = signals.EX_MEM_latches.data;
@@ -138,19 +140,14 @@ void LC3::WbMem(struct Signals &signals)
 		(signals.EX_MEM_latches.Rd_Rt == P_FLAG + N_FLAG + Z_FLAG ||
 		signals.EX_MEM_latches.Rd_Rt == flags)) {
 		// branch
-		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 0;
-	} else {
-		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 1;
-	}
-
-
-	// Branch or regular execution
-	if (tempSignals.EX_MEM_latches.MEM_WB.PCSrc) {
-		pc += 2;
-	} else {
 		pc = signals.EX_MEM_latches.NewPC;
-		// clean pipe
+		// clean pipe but keep flags
+		flags = tempSignals.EX_MEM_latches.flags;
 		tempSignals = 0;
+	} else {
+		// save flags and continue execution
+		flags = tempSignals.EX_MEM_latches.flags;
+		pc += 2;
 	}
 
 
@@ -166,5 +163,4 @@ unsigned short LC3::getFlags(short val)
 }
 
 
-// TODO: need to create a temp copy of flags
 // TODO: deal with hazards

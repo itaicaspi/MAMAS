@@ -28,7 +28,6 @@ struct Signals
 		bool MemWrite;
 		bool RegWrite;
 		bool MemToReg;
-		bool PCSrc;
 	};
 
 
@@ -71,13 +70,13 @@ struct Signals
 enum implementedIns {ADD, ADDI, AND, ANDI, LD, ST, BR};
 
 const struct ControlSignals insSignals[] {
-	{1, 0, 0, 0}, {0, 0, 0, 1, 0, 1}, // ADD - ALUOp same as LD and ST
-	{1, 0, 0, 1}, {0, 0, 0, 1, 0, 1}, // ADDI - ALUOp same as LD and ST
-	{1, 1, 0, 0}, {0, 0, 0, 1, 0, 1}, // AND
-	{1, 1, 0, 1}, {0, 0, 0, 1, 0, 1}, // ANDI
-	{0, 0, 0, 1}, {0, 1, 0, 1, 1, 1}, // LD
-	{0, 0, 0, 1}, {0, 0, 1, 0, 0, 1}, // ST
-	{0, 0, 1, 0}, {1, 0, 0, 0, 0, 0}  // BR
+	{1, 0, 0, 0}, {0, 0, 0, 1, 0}, // ADD - ALUOp same as LD and ST
+	{1, 0, 0, 1}, {0, 0, 0, 1, 0}, // ADDI - ALUOp same as LD and ST
+	{1, 1, 0, 0}, {0, 0, 0, 1, 0}, // AND
+	{1, 1, 0, 1}, {0, 0, 0, 1, 0}, // ANDI
+	{0, 0, 0, 1}, {0, 1, 0, 1, 1}, // LD
+	{0, 0, 0, 1}, {0, 0, 1, 0, 0}, // ST
+	{0, 0, 1, 0}, {1, 0, 0, 0, 0}  // BR
 };
 
 #endif
