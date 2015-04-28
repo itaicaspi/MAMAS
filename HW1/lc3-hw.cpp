@@ -3,7 +3,7 @@
 /////// For you to implement
 
 //you cannot change the signature of this function.
-void LC3::Run(int steps)
+	void LC3::Run(int steps)
 {
    struct Signals signals;
    //set the content of the struct to 0's. 
@@ -21,10 +21,48 @@ void LC3::Run(int steps)
 // you may change the signatures of this fucntions according to your needs. 
 void LC3::Fetch(unsigned short &ins, struct Signals &signals)
 {
+	unsigned short pc_from_mux;
+	if (signals.controls.PCSrc) {
+		pc_from_mux = signals.EX_MEM_latches.NewPC;
+	} else {
+		pc_from_mux = signals.IF_ID_latches.NewPC;
+	}
+
+	signals.IF_ID_latches.ins = ReadMem(pc);
+	signals.IF_ID_latches.NewPC = pc_from_mux + 2;
+
+	// Find control hazard
+	unsigned short opcode = decodeUnsignedField(signals.IF_ID_latches.ins, OPCODE);
+	if (opcode == BR_OPCODE || opcode == JMP_OPCODE || opcode == JS_OPCODE) {
+		// TODO: Control hazard, need to stall until this command reaches Memory step
+	}
 }
 
 void LC3::Decode(unsigned short ins, struct Signals &signals)
 {
+	unsigned short opcode = decodeUnsignedField(signals.IF_ID_latches.ins, OPCODE);
+
+	// TODO: where does the opcode continue to? how does it reach the exec stage?
+
+	// fill Immediate latch if needed
+	if (opcode == ADD_OPCODE || opcode == AND_OPCODE) {
+		signals.controls.ALUSrc = decodeUnsignedField(signals.IF_ID_latches.ins, IMM);
+		if (signals.controls.ALUSrc) {
+			// extension from 5bit to 16 done automatically by compiler
+			signals.ID_EX_latches.Imm = decodeSignedField(signals.IF_ID_latches.ins, IMM5);
+		}
+	}
+
+	// Get register values
+	unsigned short sr1 = decodeUnsignedField(signals.IF_ID_latches.ins, SR1);
+	unsigned short sr2 = decodeUnsignedField(signals.IF_ID_latches.ins, SR2);
+	signals.ID_EX_latches.data1 = regs[sr1];
+	signals.ID_EX_latches.data2 = regs[sr2];
+
+
+	// Not very sure about these two..
+	signals.ID_EX_latches.Rd = decodeUnsignedField(signals.IF_ID_latches.ins, SR);
+	signals.ID_EX_latches.Rt = decodeUnsignedField(signals.IF_ID_latches.ins, SR1);
 }
 
 void LC3::Exec(struct Signals &signals)

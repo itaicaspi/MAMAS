@@ -59,7 +59,7 @@ struct Signals
 		struct EX_Signals EX;
 		struct MEM_WB_Signals MEM_WB;
 	};
-
+		bool ALUSrc; // 1 = Immediate; 0=data2
 };
 
 enum implementedIns {ADD, ADDI, AND, ANDI, LD, ST, BR};
