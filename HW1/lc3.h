@@ -104,7 +104,7 @@ class LC3
 	unsigned short pc;				// Program Counter
 
 	struct Signals tempSignals;     // temp state
-	void updateFlags(short val);    // updating NZP flags
+	unsigned short getFlags(short val); // get NZP flags
 public:
 	LC3();
 	void DumpMem();

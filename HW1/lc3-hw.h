@@ -12,7 +12,9 @@ struct Signals
 	// For you to define
 	// Including latches between phases in the pipeline
 
-
+	/*
+	 * SIGNALS
+	 */
 	struct EX_Signals {
 		bool RegDst;
 		bool ALUOp1;
@@ -30,6 +32,14 @@ struct Signals
 	};
 
 
+	struct ControlSignals {
+		struct EX_Signals EX;
+		struct MEM_WB_Signals MEM_WB;
+	};
+
+	/*
+	 * LATCHES
+	 */
 	struct IF_ID_Latches {
 		unsigned short NewPC;
 		unsigned short ins;
@@ -48,6 +58,7 @@ struct Signals
 
 	struct EX_MEM_Latches {
 		short Rd_Rt;
+		unsigned short flags;
 		short result;
 		short data;
 		unsigned short NewPC;
@@ -55,10 +66,6 @@ struct Signals
 	} EX_MEM_latches;
 
 
-	struct ControlSignals {
-		struct EX_Signals EX;
-		struct MEM_WB_Signals MEM_WB;
-	};
 };
 
 enum implementedIns {ADD, ADDI, AND, ANDI, LD, ST, BR};

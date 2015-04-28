@@ -3,17 +3,18 @@
 /////// For you to implement
 
 //you cannot change the signature of this function.
-	void LC3::Run(int steps)
+void LC3::Run(int steps)
 {
    struct Signals signals;
    //set the content of the struct to 0's. 
    memset(&signals, 0, sizeof(signals));
    for (int i=0; i<steps; i++) {
 	   //each iteration is equal to one clock cycle.
-	   //Fetch(ins, signals);
-	   //Decode(ins, signals);
+	   Fetch(ins, signals);
+	   Decode(ins, signals);
 	   Exec(signals);
 	   WbMem(signals);
+	   flags = tempSignals.EX_MEM_latches.flags;
 	   signals = tempSignals;
    }
 }
@@ -81,16 +82,18 @@ void LC3::Exec(struct Signals &signals)
 
 	// Perform ALU operations
 	if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
+		// ADD
 		result = signals.ID_EX_latches.data1 + val2;
-		updateFlags(result);
+		signals.EX_MEM_latches.flags = getFlags(result);
 	} else if (signals.ID_EX_latches.EX.ALUOp1 == 1 && signals.ID_EX_latches.EX.ALUOp0 == 0) {
+		// AND
 		result = signals.ID_EX_latches.data1 & val2;
-		updateFlags(result);
+		signals.EX_MEM_latches.flags = getFlags(result);
 	} else if (signals.ID_EX_latches.EX.ALUOp1 == 0 && signals.ID_EX_latches.EX.ALUOp0 == 1) {
 		// TODO: branch subtract
 	}
 
-	// Update the flags
+	// Update the result
 	tempSignals.EX_MEM_latches.result = result;
 
 	// Pass the register latches to next level
@@ -136,7 +139,6 @@ void LC3::WbMem(struct Signals &signals)
 		signals.EX_MEM_latches.Rd_Rt == flags)) {
 		// branch
 		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 0;
-		// TODO: clean all the command that were already loaded to the pipe
 	} else {
 		tempSignals.EX_MEM_latches.MEM_WB.PCSrc = 1;
 	}
@@ -147,16 +149,20 @@ void LC3::WbMem(struct Signals &signals)
 		pc += 2;
 	} else {
 		pc = signals.EX_MEM_latches.NewPC;
+		// clean pipe
+		tempSignals = 0;
 	}
 
 
 }
 
-void LC3::updateFlags(short val)
+unsigned short LC3::getFlags(short val)
 {
-	if (val > 0) flags = P_FLAG;
-	else if (val == 0) flags = Z_FLAG;
-	else flags = N_FLAG;
+	unsigned short tempFlags;
+	if (val > 0) tempFlags = P_FLAG;
+	else if (val == 0) tempFlags = Z_FLAG;
+	else tempFlags = N_FLAG;
+	return tempFlags;
 }
 
 
