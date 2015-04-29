@@ -9,9 +9,6 @@
 
 struct Signals
 {
-	// For you to define
-	// Including latches between phases in the pipeline
-
 	/*
 	 * SIGNALS
 	 */
@@ -28,6 +25,7 @@ struct Signals
 		bool MemWrite;
 		bool RegWrite;
 		bool MemToReg;
+		bool PCSrc;
 	};
 
 
