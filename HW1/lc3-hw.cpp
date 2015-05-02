@@ -14,6 +14,7 @@ void LC3::Run(int steps)
 	   Decode(ins, signals);
 	   Exec(signals);
 	   WbMem(signals);
+	   flags = tempSignals.EX_MEM_latches.flags;
 	   signals = tempSignals;
    }
 }
@@ -141,12 +142,7 @@ void LC3::WbMem(struct Signals &signals)
 		signals.EX_MEM_latches.Rd_Rt == flags)) {
 		// branch
 		pc = signals.EX_MEM_latches.NewPC;
-		// clean pipe but keep flags
-		flags = tempSignals.EX_MEM_latches.flags;
-		tempSignals = 0;
 	} else {
-		// save flags and continue execution
-		flags = tempSignals.EX_MEM_latches.flags;
 		pc += 2;
 	}
 
