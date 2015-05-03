@@ -22,19 +22,17 @@ void LC3::Run(int steps)
 // you may change the signatures of this fucntions according to your needs. 
 void LC3::Fetch(unsigned short &ins, struct Signals &signals)
 {
-	unsigned short pc_from_mux;
-	if (signals.controls.PCSrc) {
-		pc_from_mux = signals.EX_MEM_latches.NewPC;
+	if (signals.EX_MEM_latches.MEM_WB.PCSrc) {
+		tempSignals.IF_ID_latches.NewPC = signals.EX_MEM_latches.NewPC + 2;
 	} else {
-		pc_from_mux = signals.IF_ID_latches.NewPC;
+		tempSignals.IF_ID_latches.NewPC = signals.IF_ID_latches.NewPC + 2;
 	}
 
-	signals.IF_ID_latches.ins = ReadMem(pc);
-	signals.IF_ID_latches.NewPC = pc_from_mux + 2;
+	tempSignals.IF_ID_latches.ins = ReadMem(pc);
 
-	// Find control hazard
+	// If this is a jump - control hazard
 	unsigned short opcode = decodeUnsignedField(signals.IF_ID_latches.ins, OPCODE);
-	if (opcode == BR_OPCODE || opcode == JMP_OPCODE || opcode == JS_OPCODE) {
+	if ((opcode & 0x3) == 0x0) {
 		// TODO: Control hazard, need to stall until this command reaches Memory step
 	}
 }
@@ -42,28 +40,37 @@ void LC3::Fetch(unsigned short &ins, struct Signals &signals)
 void LC3::Decode(unsigned short ins, struct Signals &signals)
 {
 	unsigned short opcode = decodeUnsignedField(signals.IF_ID_latches.ins, OPCODE);
-
 	// TODO: where does the opcode continue to? how does it reach the exec stage?
 
-	// fill Immediate latch if needed
-	if (opcode == ADD_OPCODE || opcode == AND_OPCODE) {
-		signals.controls.ALUSrc = decodeUnsignedField(signals.IF_ID_latches.ins, IMM);
-		if (signals.controls.ALUSrc) {
-			// extension from 5bit to 16 done automatically by compiler
-			signals.ID_EX_latches.Imm = decodeSignedField(signals.IF_ID_latches.ins, IMM5);
-		}
-	}
+	// fill ALUSrc, Immediate latchs
+	tempSignals.ID_EX_latches.EX.ALUSrc = decodeUnsignedField(signals.IF_ID_latches.ins, IMM);
+	// extension from 5bit to 16 done automatically by compiler
+	tempSignals.ID_EX_latches.Imm = decodeSignedField(signals.IF_ID_latches.ins, IMM5);
+
+	// Opcode controls
+	tempSignals.ID_EX_latches.EX.ALUOp0 = opcode & 0x4;
+	tempSignals.ID_EX_latches.EX.ALUOp0 = opcode & 0x8;
+	signals.ID_EX_latches.MEM_WB.Branch	= (opcode & 0x3) == 0x0;
+
+	signals.ID_EX_latches.EX.RegDst = 1; // ??
 
 	// Get register values
 	unsigned short sr1 = decodeUnsignedField(signals.IF_ID_latches.ins, SR1);
 	unsigned short sr2 = decodeUnsignedField(signals.IF_ID_latches.ins, SR2);
-	signals.ID_EX_latches.data1 = regs[sr1];
-	signals.ID_EX_latches.data2 = regs[sr2];
-
+	tempSignals.ID_EX_latches.data1 = regs[sr1];
+	tempSignals.ID_EX_latches.data2 = regs[sr2];
 
 	// Not very sure about these two..
-	signals.ID_EX_latches.Rd = decodeUnsignedField(signals.IF_ID_latches.ins, SR);
-	signals.ID_EX_latches.Rt = decodeUnsignedField(signals.IF_ID_latches.ins, SR1);
+	tempSignals.ID_EX_latches.Rd = decodeUnsignedField(signals.IF_ID_latches.ins, SR);
+	tempSignals.ID_EX_latches.Rt = decodeUnsignedField(signals.IF_ID_latches.ins, SR1);
+
+	// Forward signals, latches
+	tempSignals.EX_MEM_latches.NewPC = signals.IF_ID_latches.NewPC;
+
+	tempSignals.EX_MEM_latches.MEM_WB.MemRead = (opcode & 0x11) == 0x2;
+	tempSignals.EX_MEM_latches.MEM_WB.MemWrite = (opcode & 0x11) == 0x3;
+	signals.EX_MEM_latches.MEM_WB.MemToReg = (opcode & 0x11) == 0x2;
+	signals.EX_MEM_latches.MEM_WB.RegWrite = ((opcode & 0x11) == 0x2) ||  (opcode & 0x11) == 0x1;
 }
 
 void LC3::Exec(struct Signals &signals)
@@ -124,10 +131,10 @@ void LC3::WbMem(struct Signals &signals)
 	}
 
 	if (signals.EX_MEM_latches.MEM_WB.MemToReg) {
-		// Write data is from memory
+		// Write data is from ALU result
 		writeData = signals.EX_MEM_latches.result;
 	} else {
-		// Write data is from ALU result
+		// Write data is from memory
 		writeData = mem[signals.EX_MEM_latches.data];
 	}
 
