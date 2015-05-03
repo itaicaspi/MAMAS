@@ -71,6 +71,7 @@ void LC3::Decode(unsigned short ins, struct Signals &signals)
 	tempSignals.EX_MEM_latches.MEM_WB.MemWrite = (opcode & 0x11) == 0x3;
 	signals.EX_MEM_latches.MEM_WB.MemToReg = (opcode & 0x11) == 0x2;
 	signals.EX_MEM_latches.MEM_WB.RegWrite = ((opcode & 0x11) == 0x2) ||  (opcode & 0x11) == 0x1;
+
 }
 
 void LC3::Exec(struct Signals &signals)
@@ -122,12 +123,12 @@ void LC3::WbMem(struct Signals &signals)
 
 	if (signals.EX_MEM_latches.MEM_WB.MemRead) {
 		// Read from memory
-		readData = mem[signals.EX_MEM_latches.data];
+		readData = ReadMem(signals.EX_MEM_latches.data);
 		// update flags for LD
 		tempSignals.EX_MEM_latches.flags = getFlags(readData);
 	} else if (signals.EX_MEM_latches.MEM_WB.MemWrite) {
 		// Write to memory
-		mem[signals.EX_MEM_latches.result] = signals.EX_MEM_latches.data;
+		WriteMem(signals.EX_MEM_latches.result, signals.EX_MEM_latches.data);
 	}
 
 	if (signals.EX_MEM_latches.MEM_WB.MemToReg) {
@@ -135,7 +136,7 @@ void LC3::WbMem(struct Signals &signals)
 		writeData = signals.EX_MEM_latches.result;
 	} else {
 		// Write data is from memory
-		writeData = mem[signals.EX_MEM_latches.data];
+		writeData = ReadMem(signals.EX_MEM_latches.data);
 	}
 
 	// Writing to RF can be done in parallel to reading in DECODE
