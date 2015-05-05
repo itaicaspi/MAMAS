@@ -116,8 +116,8 @@ public:
 	short decodeSignedField(unsigned short inst, InsField field);
 
 	// For you to implement
-	void Fetch(unsigned short &ins, struct Signals &signals);
-	void Decode(unsigned short ins, struct Signals &signals);
+	void Fetch(struct Signals &signals);
+	void Decode(struct Signals &signals);
 	void Exec(struct Signals &signals);
 	void WbMem(struct Signals &signals);
 	
