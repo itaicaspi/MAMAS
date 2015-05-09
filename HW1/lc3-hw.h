@@ -13,6 +13,7 @@ struct EX_Signals {
 	bool ALUOp1;
 	bool ALUOp0;
 	bool ALUSrc; // 1 = Immediate; 0=data2
+	bool UpdateSignals;
 };
 
 struct MEM_WB_Signals {
@@ -31,17 +32,7 @@ struct ControlSignals {
 };
 
 
-enum implementedIns {ADD, ADDI, AND, ANDI, LD, ST, BR};
-
-const struct ControlSignals insSignals[] {
-	{1, 0, 0, 0}, {0, 0, 0, 1, 0}, // ADD - ALUOp same as LD and ST
-	{1, 0, 0, 1}, {0, 0, 0, 1, 0}, // ADDI - ALUOp same as LD and ST
-	{1, 1, 0, 0}, {0, 0, 0, 1, 0}, // AND
-	{1, 1, 0, 1}, {0, 0, 0, 1, 0}, // ANDI
-	{0, 0, 0, 1}, {0, 1, 0, 1, 1}, // LD
-	{0, 0, 0, 1}, {0, 0, 1, 0, 0}, // ST
-	{0, 0, 1, 0}, {1, 0, 0, 0, 0}  // BR
-};
+enum implementedIns {ADD, ADDI, AND, ANDI, LD, ST, BR, STALL};
 
 
 struct Signals
@@ -50,6 +41,7 @@ struct Signals
 	/*
 	 * LATCHES
 	 */
+
 	struct IF_ID_Latches {
 		unsigned short NewPC;
 		unsigned short ins;
@@ -68,14 +60,17 @@ struct Signals
 
 	struct EX_MEM_Latches {
 		short Rd_Rt;
-		unsigned short flags;
 		short result;
 		short data;
 		unsigned short NewPC;
 		struct MEM_WB_Signals MEM_WB;
 	} EX_MEM_latches;
 
+	struct MEM_Latches {
+		unsigned short NewPC;
+	} MEM_latches;
 
+	int stall;
 };
 
 #endif
