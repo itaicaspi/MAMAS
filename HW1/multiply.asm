@@ -1,5 +1,5 @@
 	BR start
-arg1:	.WORD	2
+arg1:	.WORD	5
 arg2:	.WORD	5
 result:	.WORD	0
 start:	LD	R1,arg1

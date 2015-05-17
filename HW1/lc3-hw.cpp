@@ -88,7 +88,7 @@ void LC3::Decode(struct Signals &signals)
 		break;
 	case ST_OPCODE:
 		tempSignals.ID_EX_latches.Imm = decodeSignedField(signals.IF_ID_latches.ins, PCOFFSET9);
-		ins_num = fixDataHazard(sr1, sr2, signals) ? STALL : ST;
+		ins_num = fixDataHazard(sr, sr, signals) ? STALL : ST;
 		tempSignals.ID_EX_latches.data2 = regs[sr];
 		break;
 	case BR_OPCODE:
