@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 			local_history = true;
 		if (elems[3] == "local_tables")
 			local_tables = true;
-		if (elems[4]=="using_share")
+		if (elems.size() >= 5 && elems[4]=="using_share")
 			using_share=true;
 	} catch (...) {
 		cout << "Error in input file: cannot read config" << endl;
