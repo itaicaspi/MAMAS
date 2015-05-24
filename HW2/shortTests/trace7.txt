@@ -1,0 +1,9 @@
+2 1 local_history local_tables using_share
+0x1000 T
+0x1002 N
+0x1001 T
+0X1003 N
+0x1000 N
+0X1001 N
+0X1002 T
+0X1003 T
