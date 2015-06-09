@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
+#include <stdlib.h>
 using namespace std;
 
 // split string by the delimiter ',' and return a vector that contain the result.

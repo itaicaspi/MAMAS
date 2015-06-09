@@ -3,7 +3,9 @@
 #define CACHE_H_
 
 #include <stdbool.h>
+#include <vector>
 
+using namespace std;
 
 //AddrType represent memory address.
 typedef unsigned int AddrType;
@@ -23,8 +25,21 @@ public:
  */
 	Cache(AddrType numWays,AddrType dataSize,AddrType lineSize);
 
+	bool lookup(AddrType addr);
+	int LRU();
+
 private:
 	// add private members here
+	AddrType numWays;
+	AddrType dataSize;
+	AddrType lineSize;
+	int sets;
+
+	typedef struct {
+		vector<bool> valid;
+		vector<int> tags;
+	} Way;
+	vector<Way> ways;
 
 };
 

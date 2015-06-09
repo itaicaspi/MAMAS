@@ -30,6 +30,11 @@ public:
 
 private:
 //add private members here
+	Cache* L1;
+	Cache* L2;
+	bool inclusive;
+
+	CacheStatus hierLookup(AddrType addr);
 };
 
 #endif
