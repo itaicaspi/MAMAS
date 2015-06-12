@@ -1,0 +1,90 @@
+make: `CacheSim' is up to date.
+Running deterministic tests
+Test 1: [1;32mpassed[0m
+Test 2: [1;32mpassed[0m
+Test 3: [1;32mpassed[0m
+Test 4: [1;32mpassed[0m
+Test 5: [1;32mpassed[0m
+Test 6: [1;32mpassed[0m
+Test 9: [31mfailed[0m
+[31mTest 9 description: [0mTest that the cache behaves correctly when both don't write allocate
+end of deterministic tests
+Running random tests, let's get frenzy! :)
+Test 3: [31mfailed[0m
+128,TRUE,4,65536,512,262144
+Test 8: [31mfailed[0m
+16,TRUE,16,512,512,2097152
+Test 13: [1;32mpassed[0m
+Test 24: [31mfailed[0m
+128,TRUE,512,65536,4,1048576
+Test 25: [31mfailed[0m
+64,TRUE,4,262144,512,2097152
+Test 31: [1;32mpassed[0m
+Test 33: [31mfailed[0m
+16,TRUE,32,1024,64,65536
+Test 34: [31mfailed[0m
+512,TRUE,16,524288,256,1048576
+Test 37: [1;32mpassed[0m
+Test 38: [31mfailed[0m
+8,TRUE,16,4096,128,1048576
+Test 46: [1;32mpassed[0m
+Test 47: [31mfailed[0m
+128,TRUE,512,262144,64,1048576
+Test 48: [31mfailed[0m
+8,TRUE,8,32768,512,65536
+Test 51: [31mfailed[0m
+16,TRUE,32,2097152,256,2097152
+Test 55: [1;32mpassed[0m
+Test 56: [1;32mpassed[0m
+Test 58: [1;32mpassed[0m
+Test 61: [1;32mpassed[0m
+Test 67: [1;32mpassed[0m
+Test 71: [1;32mpassed[0m
+Test 76: [1;32mpassed[0m
+Test 85: [1;32mpassed[0m
+Test 87: [31mfailed[0m
+8,TRUE,128,262144,64,2097152
+Test 94: [1;32mpassed[0m
+Test 95: [31mfailed[0m
+64,TRUE,512,1048576,32,2097152
+Test 96: [31mfailed[0m
+512,TRUE,512,262144,512,1048576
+Test 100: [1;32mpassed[0m
+Test 102: [1;32mpassed[0m
+Test 106: [31mfailed[0m
+64,TRUE,16,262144,4,262144
+Test 112: [31mfailed[0m
+32,TRUE,16,2048,512,65536
+Test 115: [31mfailed[0m
+4,TRUE,128,2048,32,2097152
+Test 117: [31mfailed[0m
+8,TRUE,128,131072,64,524288
+Test 120: [1;32mpassed[0m
+Test 133: [31mfailed[0m
+64,TRUE,8,524288,128,2097152
+Test 136: [1;32mpassed[0m
+Test 142: [31mfailed[0m
+128,TRUE,32,524288,4,524288
+Test 158: [1;32mpassed[0m
+Test 159: [1;32mpassed[0m
+Test 162: [31mfailed[0m
+16,TRUE,16,262144,16,262144
+Test 165: [31mfailed[0m
+256,TRUE,8,65536,8,65536
+Test 169: [31mfailed[0m
+8,TRUE,8,2097152,8,2097152
+Test 170: [31mfailed[0m
+4,TRUE,16,1048576,4,2097152
+Test 171: [31mfailed[0m
+256,TRUE,64,131072,32,262144
+Test 177: [31mfailed[0m
+512,TRUE,128,131072,16,1048576
+Test 178: [1;32mpassed[0m
+Test 186: [31mfailed[0m
+8,TRUE,32,2048,64,2097152
+Test 191: [31mfailed[0m
+256,TRUE,256,1048576,4,2097152
+Test 192: [1;32mpassed[0m
+Test 198: [31mfailed[0m
+64,TRUE,8,8192,4,32768
+end of random tests :(

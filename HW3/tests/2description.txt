@@ -1,0 +1,7 @@
+Test that the cache is non-inclusive
+1. read 4 addresses with same set in both L1 and L2, and fill all the ways in L2.
+2. read an address, a2, that will go to L1's second set.
+3. read the 4 addresses again to clear a2 from L2.
+4. read a2 and get L1HIT.
+5. remove a2 from L1 with matching address.
+6. see that we get mem access, and that there isn't inclusion

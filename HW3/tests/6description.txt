@@ -1,0 +1,2 @@
+Some LRU tests, L1 doesn't bother us here.
+Also checks the case where both don't write allocate
